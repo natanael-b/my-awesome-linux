@@ -1,0 +1,12 @@
+################################################
+#                                              #
+#   MS Windows .url file                       #
+#                                              #
+################################################
+
+[Desktop Entry]
+Exec=bash -c 'xdg-open $(grep -vm1 "^URL=" "%f" | cut -c5-)'
+MimeType=application/x-mswinurl;
+Name=URL File Handler
+NoDisplay=true
+Type=Application
