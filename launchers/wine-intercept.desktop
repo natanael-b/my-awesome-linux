@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Install Windows Application
+GenericName=Install Windows Application
+Comment=Install Windows Applications
+Exec=/opt/my-awesome-linux/wine-intercept.sh %f
+Icon=wine
+Type=Application
+NoDisplay=true
+MimeType=application/x-ms-dos-executable;application/x-msi
