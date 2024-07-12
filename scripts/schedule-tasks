@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#
+# Translations:
+#
+#   - C     -> schedule -> `Scheduled Tasks`
+#
+#   - pt_BR -> schedule -> `Tarefas Agendadas`
+#
+#
+ME=$(readlink -f "${0}")
+already_run=""
+
+[ ! "${XDG_CONFIG_HOME}" = "" ] && "${HOME}/.config"
+
+function sanitize(){
+  echo "${1}" | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//'
+}
+
+function translate(){
+    local language=$(echo "${LANG}" | cut -d\. -f1)
+    local messageID="${1}"
+    local message=$(grep -m1 "${language}.*${messageID}" "${ME}" | cut -d\` -f2)
+          message=$(sanitize "${message}")
+    
+    [ ! "${message}" = "" ] && {
+        echo "${message}"
+        return
+    }
+
+    message=$(grep -m1 "${language}.*${messageID}" "${ME}" | cut -d\` -f2)
+    sanitize "${message}"
+}
+
+function processFile() {
+    [ ! -f "${1}" ] && return
+
+    hash=$(echo "${1}" | sha256sum | cut -d' ' -f1)
+    echo "${already_run}" | grep -m1 "${hash}" || {
+        already_run="${already_run}"$'\n'"${hash}"
+
+        echo "${1}" | grep -q ".msg"$ && {
+            yad --borders=32 --button=gtk-close --undecorated --skip-taskbar --filename="${1}"   \
+                             --wrap --show-uri --text-info --width=800 --height=480 --timeout=20 \
+                             --center &
+            return
+        }
+
+        [ -x "${1}" ] && {
+            "${1}" &
+            return
+        }
+
+        xdg-open "${1}" &
+    }
+}
+
+schedule=$(translate "schedule")
+
+base="${XDG_CONFIG_HOME}/${schedule}"
+mkdir -p "${XDG_CONFIG_HOME}/${schedule}"
+
+while true; do
+  current_full_datetime=$(date +'%Y-%m-%d__%H:%M')
+  current_full_time=$(date +'%H:%M')
+  current_full_date=$(date +'%Y-%m-%d')
+
+  [ -d "${base}/${current_full_datetime}" ] && {
+    for fname in "${base}/${current_full_datetime}"/*; do
+      processFile "${fname}"
+    done
+  }
+
+  [ -d "${base}/${current_full_time}" ] && {
+    for fname in "base/${current_full_time}"/*; do
+      processFile "${fname}"
+    done
+  }
+
+  [ -d "${base}/${current_full_date}" ] && {
+    for fname in "base/${current_full_date}"/*; do
+      processFile "${fname}"
+    done
+  }
+  sleep 30
+done
