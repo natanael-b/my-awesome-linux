@@ -21,6 +21,14 @@
 #  Apps:
 #
 #   > Notepad++         #   npp.*.(exe|msi)                # suggestWine           # 
+#   > XnView MP         #   XnViewMP-win.*.exe             # suggestWine           # 
+#   > XnView Classic    #   XnView-win-small.exe           # suggestWine           # 
+#   > XnConvert         #   XnConvert-win.*.exe            # suggestWine           # 
+#   > XnResize          #   XnRetro.exe                    # suggestWine           # copy-directory
+#   > XnSketch          #   XnRetro.exe                    # suggestWine           # copy-directory
+#   > XnRetro           #   XnResize-win.*.exe             # suggestWine           #
+#   > XnRetro           #   XnResize-win.*.exe             # suggestWine           #
+#   > Sumatra PDF       #   SumatraPDF-.*-install.exe      # suggestWine           # csd.reg
 #   > Scratch           #   scratch.*.setup.*.(exe|msi)    # suggestNative         # edu.mit.Scratch
 #   > Paint.NET         #   paint.net.*.exe                # suggestAlternative    # Pinta $ com.github.PintaProject.Pinta
 #
