@@ -26,11 +26,22 @@
 #   > XnConvert         #   XnConvert-win.*.exe            # suggestWine           # 
 #   > XnResize          #   XnRetro.exe                    # suggestWine           # copy-directory
 #   > XnSketch          #   XnRetro.exe                    # suggestWine           # copy-directory
-#   > XnRetro           #   XnResize-win.*.exe             # suggestWine           #
-#   > XnRetro           #   XnResize-win.*.exe             # suggestWine           #
+#   > PhotoScape        #   PhotoScapeSetup_V3-7.exe       # suggestWine           #
 #   > Sumatra PDF       #   SumatraPDF-.*-install.exe      # suggestWine           # csd.reg
 #   > Scratch           #   scratch.*.setup.*.(exe|msi)    # suggestNative         # edu.mit.Scratch
 #   > Paint.NET         #   paint.net.*.exe                # suggestAlternative    # Pinta $ com.github.PintaProject.Pinta
+#   > WinRAR            #   winrar-.*.exe                  # suggestAlternative    # Ark $ org.kde.ark
+#   > Mozilla Firefox   #   firefox\\s+setup.*.(exe|msi)   # suggestNative         #
+#   > Internet Explorer #   (eie11|ie11).*.(exe|msi)       # suggestNative         # com.microsoft.Edge
+#   > Brave Browser     #   (eie11|ie11).*.(exe|msi)       # suggestNative         # com.brave.Browser
+#   > Microsoft Edge    #   microsoftedgesetup.*.(exe|msi) # suggestNative         # com.microsoft.Edge
+#   > Opera             #   opera(.*.|)setup.*.(exe|msi)   # suggestNative         # com.opera.Opera
+#   > Thunderbird Mail  #   thunderbird.*.(exe|msi)        # suggestNative         # org.mozilla.Thunderbird
+#   > Dropbox           #   dropbox.*.exe                  # suggestNative         # com.dropbox.Client
+#   > Skype             #   skype.*.exe                    # suggestNative         # com.skype.Client
+#   > Adobe Reader      #   reader.*.exe                   # suggestAlternative    # Okular $ org.kde.okular
+#   > Adobe Reader      #   acrordr.*.exe                  # suggestAlternative    # Okular $ org.kde.okular
+
 #
 #
 ME=$(readlink -f "${0}")
