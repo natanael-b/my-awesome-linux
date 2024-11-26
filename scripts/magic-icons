@@ -1,0 +1,159 @@
+#!/usr/bin/env bash 
+#
+#
+#    File system based app store for Linux
+#  -----------------------------------------------------
+#
+#    This script uses flatpak-install-gui to create 
+#    a minimal easy-to-use app store for Linux using
+#    Flathub as repository
+#
+#    If your distro uses My Awesome Linux just open
+#    your File Manager in "Magic Icons", and open
+#    the desired app icon
+#
+#    If you want this please install My Awesome Linux at:
+#    https://github.com/natanael-b/my-awesome-linux/
+#
+#    Note: This software is created to be part of 
+#    My Awesome Linux and may not function properly 
+#    separately. My Awesome Linux is licensed under MIT
+#    terms, please feel free to contribute
+#
+#  -----------------------------------------------------
+#
+#    TODO:
+#
+#      [ ]  Separated installed applications
+#      [ ]  Put some popular apps in root directory for
+#           easy install
+#
+lang=$(echo -n "${LANG}" | cut -d\. -f1)
+
+Store="Magic Icons"
+
+[ "${XDG_DATA_HOME}" = "" ] && XDG_DATA_HOME="${HOME}/.local/share"
+mkdir -p "${XDG_DATA_HOME}/Magic-Icons"
+
+AudioVideo="Audio & Video"
+Development="Development"
+Education="Education"
+Game="Games"
+Graphics="Graphics & Photography"
+Network="Internet"
+Office="Productivity & Office"
+Science="Science & Technology"
+System="System"
+Utility="Utilities"
+
+function translate {
+    [ "${lang}" = "pt_BR" ] && {
+        Store="Ícones Mágicos"
+
+        AudioVideo="Áudio & Vídeo"
+        Development="Desenvolvimento"
+        Education="Educação"
+        Game="Jogos"
+        Graphics="Gráficos & Fotografia"
+        Network="Internet"
+        Office="Produtividade & Office"
+        Science="Ciência & Tecnologia"
+        System="Sistema"
+        Utility="Utilitários"
+
+        return
+    }
+}
+
+function fetch-icon {
+    wget -q -O- "https://dl.flathub.org/repo/appstream/$(arch)/icons/128x128/${1}.png" || {
+        echo "Failed to download icon for ${1}";
+    }
+}
+
+function fetch-appstream {
+    wget -q -O- "https://dl.flathub.org/repo/appstream/$(arch)/appstream.xml.gz" || {
+        echo "Failed to download appstream data";
+        exit 1
+    }
+}
+
+function get-app-list {
+    fetch-appstream | tr -d '\n' | sed 's|<component type="desktop-application">|<component type="desktop"|g' \
+                                 | sed 's|<component type="desktop"|\n<component type="desktop"|g'            \
+                                 | grep ^'<component type="desktop"'
+}
+
+function set-variables {
+    id=$(echo "${1}" | sed 's|>|>\n|g' | grep "</id>" | sed "s|</id>$||g")
+    categories=$(echo "${1}" | sed 's|>|>\n|g' | grep "</category>" | sed "s|</category>$||g" | tr '\n' ';')
+    developer_name=$(echo "${1}" | sed 's|>|>\n|g' | grep "</developer_name>" | sed "s|</developer_name>$||g")
+
+    name=$(echo "${1}" | sed 's|</|</\n|g' | grep ' xml:lang="'${lang}'"' | grep -o "<.*" | sed "s|</$||g" | grep "<name" | sed 's|^.*>||g')
+    summary=$(echo "${1}" | sed 's|</|</\n|g' | grep ' xml:lang="'${lang}'"' | grep -o "<.*" | sed "s|</$||g" | grep "<summary" | sed 's|^.*>||g')
+
+    [ "${name}" = "" ]    && name=$(echo "${1}"    | sed 's|</|</\n|g' | grep -o "<name>.*"    | cut -d'>' -f2 | cut -d '<' -f1 | head -n1)
+    [ "${summary}" = "" ] && summary=$(echo "${1}" | sed 's|</|</\n|g' | grep -o "<summary>.*" | cut -d'>' -f2 | cut -d '<' -f1 | head -n1)
+}
+
+function reset-variables {
+    unset id
+    unset name
+    unset summary
+    unset developer_name
+    unset categories
+}
+
+function EXIT {
+    rm magic.icon
+}
+
+trap EXIT EXIT
+
+translate
+
+mkdir -p "${HOME}/${Store}"
+(
+    cd "${XDG_DATA_HOME}/Magic-Icons"
+    [ ! -f "image.tar" ] && tar --format=ustar -cf "image.tar" /dev/null
+    archivemount "image.tar" "${HOME}/${Store}"
+)
+
+cd "${HOME}/${Store}"
+
+AudioVideo="Audio & Video"
+Development="Development"
+Education="Education"
+Game="Games"
+Graphics="Graphics & Photography"
+Network="Internet"
+Office="Productivity & Office"
+Science="Science & Technology"
+System="System"
+Utility="Utilities"
+
+get-app-list | while read application ; do
+    reset-variables
+    set-variables "${application}"
+    
+    (
+        echo "[Flatpak Install Icon]";
+        echo "id=${id}";
+        echo "name=${name}";
+        echo "summary=${summary}";
+        echo "developer_name=${developer_name}";
+        
+        fetch-icon "${id}"
+    ) > magic.icon
+
+    echo "${categories}" | grep -q "AudioVideo;"  && { mkdir -p "${AudioVideo}"  ; cp magic.icon "${AudioVideo}/${name}"  ; }
+    echo "${categories}" | grep -q "Development;" && { mkdir -p "${Development}" ; cp magic.icon "${Development}/${name}" ; }
+    echo "${categories}" | grep -q "Education;"   && { mkdir -p "${Education}"   ; cp magic.icon "${Education}/${name}"   ; }
+    echo "${categories}" | grep -q "Game;"        && { mkdir -p "${Game}"        ; cp magic.icon "${Game}/${name}"        ; }
+    echo "${categories}" | grep -q "Graphics;"    && { mkdir -p "${Graphics}"    ; cp magic.icon "${Graphics}/${name}"    ; }
+    echo "${categories}" | grep -q "Network;"     && { mkdir -p "${Network}"     ; cp magic.icon "${Network}/${name}"     ; }
+    echo "${categories}" | grep -q "Office;"      && { mkdir -p "${Office}"      ; cp magic.icon "${Office}/${name}"      ; }
+    echo "${categories}" | grep -q "Science;"     && { mkdir -p "${Science}"     ; cp magic.icon "${Science}/${name}"     ; }
+    echo "${categories}" | grep -q "System;"      && { mkdir -p "${System}"      ; cp magic.icon "${System}/${name}"      ; }
+    echo "${categories}" | grep -q "Utility;"     && { mkdir -p "${Utility}"     ; cp magic.icon "${Utility}/${name}"     ; }
+done
