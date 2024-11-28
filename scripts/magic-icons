@@ -8,6 +8,12 @@
 #    a minimal easy-to-use app store for Linux using
 #    Flathub as repository
 #
+#    Dependencies:
+#        - archivemount to avoid double inode usage
+#          on lowend devices
+#        - wget
+#        - sed to manipulate appstream.xml
+#
 #    If your distro uses My Awesome Linux just open
 #    your File Manager in "Magic Icons", and open
 #    the desired app icon
@@ -20,17 +26,10 @@
 #    separately. My Awesome Linux is licensed under MIT
 #    terms, please feel free to contribute
 #
-#  -----------------------------------------------------
-#
-#    TODO:
-#
-#      [ ]  Separated installed applications
-#      [ ]  Put some popular apps in root directory for
-#           easy install
-#
 lang=$(echo -n "${LANG}" | cut -d\. -f1)
 
 Store="Magic Icons"
+WorkingDir=$(mktemp -d)
 
 [ "${XDG_DATA_HOME}" = "" ] && XDG_DATA_HOME="${HOME}/.local/share"
 mkdir -p "${XDG_DATA_HOME}/Magic-Icons"
@@ -45,6 +44,7 @@ Office="Productivity & Office"
 Science="Science & Technology"
 System="System"
 Utility="Utilities"
+Installed="Installed"
 
 function translate {
     [ "${lang}" = "pt_BR" ] && {
@@ -60,6 +60,7 @@ function translate {
         Science="Ciência & Tecnologia"
         System="Sistema"
         Utility="Utilitários"
+        Installed="Instalados"
 
         return
     }
@@ -72,7 +73,7 @@ function fetch-icon {
 }
 
 function fetch-appstream {
-    wget -q -O- "https://dl.flathub.org/repo/appstream/$(arch)/appstream.xml.gz" || {
+    wget -q -O- "https://dl.flathub.org/repo/appstream/$(arch)/appstream.xml.gz" | gunzip - || {
         echo "Failed to download appstream data";
         exit 1
     }
@@ -105,55 +106,80 @@ function reset-variables {
 }
 
 function EXIT {
-    rm magic.icon
+    rm -rf magic.icon dev
+
+    mkdir -p "${Store}"
+    (
+        cd "${XDG_DATA_HOME}/Magic-Icons"
+        archivemount -o ro "image.tar" "${Store}"
+    )
 }
 
 trap EXIT EXIT
 
 translate
+Store="${HOME}/${Store}"
 
-mkdir -p "${HOME}/${Store}"
-(
-    cd "${XDG_DATA_HOME}/Magic-Icons"
-    [ ! -f "image.tar" ] && tar --format=ustar -cf "image.tar" /dev/null
-    archivemount "image.tar" "${HOME}/${Store}"
-)
+cd "${XDG_DATA_HOME}/Magic-Icons"
 
-cd "${HOME}/${Store}"
+[ ! "${lang}" = "$(cat last_lang)" ] && {
+  rm "image.tar"
+}
 
-AudioVideo="Audio & Video"
-Development="Development"
-Education="Education"
-Game="Games"
-Graphics="Graphics & Photography"
-Network="Internet"
-Office="Productivity & Office"
-Science="Science & Technology"
-System="System"
-Utility="Utilities"
+[ ! -f "image.tar" ] && tar --format=ustar -cf "image.tar" /dev/null
+echo -n ${lang} > last_lang
+
+archivemount "image.tar" "${WorkingDir}"
+
+cd "${WorkingDir}"
+
+RecommendedApps="
+com.google.Chrome
+org.videolan.VLC
+com.valvesoftware.Steam
+com.spotify.Client
+com.obsproject.Studio
+org.freecad.FreeCAD
+org.gimp.GIMP
+org.libreoffice.LibreOffice
+org.kde.kdenlive
+org.inkscape.Inkscape
+org.blender.Blender
+org.kde.okular
+org.audacityteam.Audacity
+"
 
 get-app-list | while read application ; do
     reset-variables
     set-variables "${application}"
-    
+
     (
         echo "[Flatpak Install Icon]";
         echo "id=${id}";
         echo "name=${name}";
         echo "summary=${summary}";
         echo "developer_name=${developer_name}";
+        echo "categories=${categories}"
         
         fetch-icon "${id}"
     ) > magic.icon
 
-    echo "${categories}" | grep -q "AudioVideo;"  && { mkdir -p "${AudioVideo}"  ; cp magic.icon "${AudioVideo}/${name}"  ; }
-    echo "${categories}" | grep -q "Development;" && { mkdir -p "${Development}" ; cp magic.icon "${Development}/${name}" ; }
-    echo "${categories}" | grep -q "Education;"   && { mkdir -p "${Education}"   ; cp magic.icon "${Education}/${name}"   ; }
-    echo "${categories}" | grep -q "Game;"        && { mkdir -p "${Game}"        ; cp magic.icon "${Game}/${name}"        ; }
-    echo "${categories}" | grep -q "Graphics;"    && { mkdir -p "${Graphics}"    ; cp magic.icon "${Graphics}/${name}"    ; }
-    echo "${categories}" | grep -q "Network;"     && { mkdir -p "${Network}"     ; cp magic.icon "${Network}/${name}"     ; }
-    echo "${categories}" | grep -q "Office;"      && { mkdir -p "${Office}"      ; cp magic.icon "${Office}/${name}"      ; }
-    echo "${categories}" | grep -q "Science;"     && { mkdir -p "${Science}"     ; cp magic.icon "${Science}/${name}"     ; }
-    echo "${categories}" | grep -q "System;"      && { mkdir -p "${System}"      ; cp magic.icon "${System}/${name}"      ; }
-    echo "${categories}" | grep -q "Utility;"     && { mkdir -p "${Utility}"     ; cp magic.icon "${Utility}/${name}"     ; }
+    if [ -f "${XDG_DATA_HOME}/flatpak/app/${id}/current" ] || [ -f "/var/lib/flatpak/app/${id}/current" ]; then
+        cp magic.icon "${Installed}/${name}"
+    else
+        echo "${categories}" | grep -q "AudioVideo;"  && { mkdir -p "${AudioVideo}"  ; cp magic.icon "${AudioVideo}/${name}"  ; }
+        echo "${categories}" | grep -q "Development;" && { mkdir -p "${Development}" ; cp magic.icon "${Development}/${name}" ; }
+        echo "${categories}" | grep -q "Education;"   && { mkdir -p "${Education}"   ; cp magic.icon "${Education}/${name}"   ; }
+        echo "${categories}" | grep -q "Game;"        && { mkdir -p "${Game}"        ; cp magic.icon "${Game}/${name}"        ; }
+        echo "${categories}" | grep -q "Graphics;"    && { mkdir -p "${Graphics}"    ; cp magic.icon "${Graphics}/${name}"    ; }
+        echo "${categories}" | grep -q "Network;"     && { mkdir -p "${Network}"     ; cp magic.icon "${Network}/${name}"     ; }
+        echo "${categories}" | grep -q "Office;"      && { mkdir -p "${Office}"      ; cp magic.icon "${Office}/${name}"      ; }
+        echo "${categories}" | grep -q "Science;"     && { mkdir -p "${Science}"     ; cp magic.icon "${Science}/${name}"     ; }
+        echo "${categories}" | grep -q "System;"      && { mkdir -p "${System}"      ; cp magic.icon "${System}/${name}"      ; }
+        echo "${categories}" | grep -q "Utility;"     && { mkdir -p "${Utility}"     ; cp magic.icon "${Utility}/${name}"     ; }
+
+        echo "${RecommendedApps}" | grep -q "^${id}$" && {
+            cp magic.icon "${name}"
+        }
+    fi
 done
