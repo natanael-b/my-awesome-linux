@@ -10,7 +10,7 @@
 ME=$(readlink -f "${0}")
 already_run=""
 
-[ ! "${XDG_CONFIG_HOME}" = "" ] && "${HOME}/.config"
+[ "${XDG_CONFIG_HOME}" = "" ] && "${HOME}/.config"
 
 function sanitize(){
   echo "${1}" | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//'
