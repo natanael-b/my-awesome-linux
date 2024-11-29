@@ -1,0 +1,11 @@
+#!/bin/bash
+
+input_file="$1"
+output_file="$2"
+
+# Detect where PNG file data starts
+offset=$(grep -b -o '\x89\x50\x4E\x47\x0D\x0A\x1A\x0A' "$input_file" | cut -d: -f1 | head -n 1)
+
+# Extract PNG data
+tail -c +$((offset + 1)) "$input_file" > "$output_file"
+
