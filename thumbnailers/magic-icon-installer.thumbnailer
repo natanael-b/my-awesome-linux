@@ -1,0 +1,7 @@
+[Thumbnailer Entry]
+Version=1.0
+Name=Magic Icon Installer Thumbnailer
+MimeType=application/x-magic-icon-installer
+Exec=magic-icon-thumbnailer %i %o
+TryExec=magic-icon-thumbnailer
+Icon=application-x-magic-icon-installer
