@@ -6,7 +6,7 @@
 #   - C     -> suggestNative      -> `You are trying to install ${1}\nThis version is Windows-only\n\nDo you want to install the correct version?`
 #   - C     -> suggestWine        -> `You are trying to install ${1}\nIt needs Wine to work and this takes a while on first app\n\nDo you want to continue?`
 #   - C     -> unknown            -> `You are trying to install ${1}\nUnfortunately we do not recognize this file :(`
-#   - C     -> sucess             -> `Installation was successful`
+#   - C     -> success            -> `Installation was successful`
 #   - C     -> fail               -> `Installation failed :(`
 #   - C     -> title              -> `Install`
 #
@@ -14,35 +14,51 @@
 #   - pt_BR -> suggestNative      -> `Você está tentando instalar o ${1}\nEssa versão é apenas Windows\n\nDeseja instalar a versão certa?`
 #   - pt_BR -> suggestWine        -> `Você está tentando instalar o ${1}\nEle precisa do Wine pra funcionar e isso leva um tempinho no primeiro app\n\nDeseja prosseguir?`
 #   - pt_BR -> unknown            -> `Você está tentando instalar o ${1}\nInfelizmente não reconhecemos esse arquivo :(`
-#   - pt_BR -> sucess             -> `A instalação foi um sucesso\n`
+#   - pt_BR -> success            -> `A instalação foi um sucesso\n`
 #   - pt_BR -> fail               -> `A instalação falhou :(\n`
 #   - pt_BR -> title              -> `Instalação - `
 #
 #  Apps:
 #
-#   > Notepad++         #   npp.*.(exe|msi)                # suggestWine           # 
-#   > XnView MP         #   XnViewMP-win.*.exe             # suggestWine           # 
-#   > XnView Classic    #   XnView-win-small.exe           # suggestWine           # 
-#   > XnConvert         #   XnConvert-win.*.exe            # suggestWine           # 
-#   > XnResize          #   XnRetro.exe                    # suggestWine           # copy-directory
-#   > XnSketch          #   XnRetro.exe                    # suggestWine           # copy-directory
-#   > PhotoScape        #   PhotoScapeSetup_V3-7.exe       # suggestWine           #
-#   > Sumatra PDF       #   SumatraPDF-.*-install.exe      # suggestWine           # csd.reg
-#   > Scratch           #   scratch.*.setup.*.(exe|msi)    # suggestNative         # edu.mit.Scratch
-#   > Paint.NET         #   paint.net.*.exe                # suggestAlternative    # Pinta $ com.github.PintaProject.Pinta
-#   > WinRAR            #   winrar-.*.exe                  # suggestAlternative    # Ark $ org.kde.ark
-#   > Mozilla Firefox   #   firefox\\s+setup.*.(exe|msi)   # suggestNative         #
-#   > Internet Explorer #   (eie11|ie11).*.(exe|msi)       # suggestNative         # com.microsoft.Edge
-#   > Brave Browser     #   (eie11|ie11).*.(exe|msi)       # suggestNative         # com.brave.Browser
-#   > Microsoft Edge    #   microsoftedgesetup.*.(exe|msi) # suggestNative         # com.microsoft.Edge
-#   > Opera             #   opera(.*.|)setup.*.(exe|msi)   # suggestNative         # com.opera.Opera
-#   > Thunderbird Mail  #   thunderbird.*.(exe|msi)        # suggestNative         # org.mozilla.Thunderbird
-#   > Dropbox           #   dropbox.*.exe                  # suggestNative         # com.dropbox.Client
-#   > Skype             #   skype.*.exe                    # suggestNative         # com.skype.Client
-#   > Adobe Reader      #   reader.*.exe                   # suggestAlternative    # Okular $ org.kde.okular
-#   > Adobe Reader      #   acrordr.*.exe                  # suggestAlternative    # Okular $ org.kde.okular
+#   | Windows App Name    | Installer filename Patten               | Action to do          | Parameters to action
+#   |---------------------|-----------------------------------------|-----------------------|------------------------------------------------------
+#   > Adobe Reader        #   acrordr.*.exe                         # suggestAlternative    # Okular $ org.kde.okular
+#   > Adobe Reader        #   reader.*.exe                          # suggestAlternative    # Okular $ org.kde.okular
+#   > Apple iTunes        #   itunes.*setup.exe                     # suggestAlternative    # Cider $ sh.cider.Cider
+#   > Brave Browser       #   bravebrowsersetup.*.exe               # suggestNative         # com.brave.Browser
+#   > Dropbox             #   dropbox.*.exe                         # suggestNative         # com.dropbox.Client
+#   > Floorp              #  floorp.*.installer.*.exe               # suggestNative         # one.ablaze.floorp
+#   > Foxit PDF Reader    #  foxit-pdf-reader.*.exe                 # suggestAlternative    # Okular $ org.kde.okular
+#   > Google Chrome       #   ChromeSetup.exe                       # suggestNative         # com.google.Chrome
+#   > Google Chrome       #   chrome.*.exe                          # suggestNative         # com.google.Chrome
+#   > Google Earth Pro    #   googleearthprowin.*.exe               # suggestNative         # com.google.EarthPro
+#   > Internet Explorer   #   (eie11|ie11).*.(exe|msi)              # suggestNative         # com.microsoft.Edge
+#   > LibreWolf           #   librewolf.*.exe                       # suggestNative         # io.gitlab.librewolf-community
+#   > Microsoft Edge      #   microsoftedgesetup.*.(exe|msi)        # suggestNative         # com.microsoft.Edge
+#   > Mozilla Firefox     #   firefox\s+setup.*.(exe|msi)           # suggestNative         # org.mozilla.firefox
+#   > MPC-HC              #   mpc-hc.*.exe                          # suggestNative         # Haruna $ org.kde.haruna
+#   > Mullvad Browser     #  mullvad-browser-windows.*.exe          # suggestNative         # net.mullvad.MullvadBrowser
+#   > MPC-HC              #  nextcloud.*.msi                        # suggestNative         # com.nextcloud.desktopclient.nextcloud
+#   > Notepad++           #   npp.*.(exe|msi)                       # suggestWine           #
+#   > Opera               #   opera(.*.|)setup.*.(exe|msi)          # suggestNative         # com.opera.Opera
+#   > Paint.NET           #   paint.net.*.exe                       # suggestAlternative    # Pinta $ com.github.PintaProject.Pinta
+#   > PhotoScape          #   PhotoScapeSetup_V3-7.exe              # suggestWine           #
+#   > Scratch             #   scratch.*.setup.*.(exe|msi)           # suggestNative         # edu.mit.Scratch
+#   > Skype               #   skype.*.exe                           # suggestNative         # com.skype.Client
+#   > Spotify             #   SumatraPDF-.*-install.exe             # suggestNative         # com.spotify.Client
+#   > Sumatra PDF         #   SumatraPDF-.*-install.exe             # suggestWine           # csd.reg
+#   > Thunderbird Mail    #   thunderbird.*.(exe|msi)               # suggestNative         # org.mozilla.Thunderbird
+#   > Thunderbird Mail    #   thunderbird\s+setup.*.(exe|msi)       # suggestNative         # org.mozilla.Thunderbird
+#   > Ungoogled Chromium  #   ungoogled-chromium.*.installer.*.exe  # suggestNative         # io.github.ungoogled_software.ungoogled_chromium
+#   > Vivaldi             #   vivaldi.*.exe                         # suggestNative         # com.vivaldi.Vivaldi
+#   > Waterfox            #   waterfox.*.setup.*.exe                # suggestNative         # net.waterfox.waterfox
+#   > WinRAR              #   winrar-.*.exe                         # suggestAlternative    # Ark $ org.kde.ark
+#   > XnConvert           #   XnConvert-win.*.exe                   # suggestWine           #
+#   > XnResize            #   XnRetro.exe                           # suggestWine           # copy-directory
+#   > XnSketch            #   XnSketch.exe                          # suggestWine           # copy-directory
+#   > XnView Classic      #   XnView-win-small.exe                  # suggestWine           #
+#   > XnView MP           #   XnViewMP-win.*.exe                    # suggestWine           #
 
-#
 #
 ME=$(readlink -f "${0}")
 PATTERNS=$(grep "^#   > " "${ME}")
