@@ -1,0 +1,193 @@
+#!/usr/bin/env bash
+#
+# dpack - Compactador universal de diretórios
+# Suporta múltiplos formatos, de forma segura com nomes complexos de arquivos
+#
+
+function _arc {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 arc a "${output}")
+}
+
+function _alz {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 alz a "${output}")
+}
+
+function _arj {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 arj a "${output}")
+}
+
+function _7z {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 7z a "${output}")
+}
+
+function _cab {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 cabarc -r n "${output}")
+}
+
+function _cpio {
+  (cd "${directory}" && find . -depth -print0 | xargs -0 cpio -o > "${output}")
+}
+
+function _cramfs {
+  mkcramfs "${directory}" "${output}"
+}
+
+function _dmg {
+  hdiutil create -srcfolder "${directory}" -format UDZO "${output}"
+}
+
+function _e01 {
+  ewfacquire -t "${output}" -C -b 512 "${directory}"
+}
+
+function _erofs {
+  mkfs.erofs -d "${directory}" "${output}"
+}
+
+function _iso {
+  genisoimage -o "${output}" -r -J "${directory}"
+}
+
+function _lzh {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 lha a "${output}")
+}
+
+function _pak {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 pak a "${output}")
+}
+
+function _pax {
+  pax -wf "${output}" . 
+}
+
+function _rar {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 rar a "${output}")
+}
+
+function _sqx {
+  (cd "${directory}" && find . -mindepth 1 -print0 | xargs -0 sqx a "${output}")
+}
+
+function _squashfs {
+  mksquashfs "${directory}" "${output}" -noappend
+}
+
+function _tar {
+  tar -cf "${output}" -C "${directory}" .
+}
+
+function _tar.bz2 {
+  tar -cf - -C "${directory}" . | bzip2 > "${output}"
+}
+
+function _tar.gz {
+  tar -cf - -C "${directory}" . | gzip > "${output}"
+}
+
+function _tar.lz {
+  tar -cf - -C "${directory}" . | lzip > "${output}"
+}
+
+function _tar.lz4 {
+  tar -cf - -C "${directory}" . | lz4 > "${output}"
+}
+
+function _tar.lzo {
+  tar -cf - -C "${directory}" . | lzop > "${output}"
+}
+
+function _tar.xz {
+  tar -cf - -C "${directory}" . | xz > "${output}"
+}
+
+function _tar.Z {
+  tar -cf - -C "${directory}" . | compress
+}
+
+function _tar.zst {
+  tar -cf - -C "${directory}" . | zstd > "${output}"
+}
+
+function _wim {
+  wimlib-imagex capture "${directory}" "${output}"
+}
+
+# Sinônimos
+function _love    { _zip;      }
+function _tgz     { _tar.gz;   }
+function _tbz     { _tar.bz2;  }
+function _txz     { _tar.xz;   }
+function _tzst    { _tar.zst;  }
+function _7zip    { _7z;       }
+function _r       { _rar;      }
+function _sfs     { _squashfs; }
+function _cd      { _iso;      }
+function _w       { _wim;      }
+function _tarball { _tar;      }
+function _tbz2    { _tar.bz2;  }
+function _txz2    { _tar.xz;   }
+
+# Configurações do shell
+shopt -s nullglob dotglob
+IFS=$'\n'
+
+# Ajuda
+if [[ "${1}" == "--help" || "${1}" == "-h" ]]; then
+  cat <<EOF
+dpack
+------------------------------------------------------------------
+Compacte diretórios sem esforço
+
+Uso:
+   ${0} [formato] [diretório] [arquivo de saída]
+
+Nota: apenas o conteúdo do diretório será compactado
+
+------------------------------------------------------------------
+
+Formatos disponíveis:
+
+EOF
+  declare -F | awk '{print $3}' | grep '^_' | sed 's/^_/  - /'
+  exit 0
+fi
+
+# Verifica formato
+if ! declare -f "_${1}" > /dev/null; then
+  echo "Erro: Formato de arquivo não suportado"
+  echo "Formatos disponíveis:"
+  declare -F | awk '{print $3}' | grep '^_' | sed 's/^_/  - /'
+  exit 1
+fi
+
+directory=$(realpath "${2}")
+output=$(realpath "${3}")
+
+# Validações
+if echo "${output}" | grep -q "^${directory}/"; then
+  echo "O arquivo de saída não pode estar dentro do diretório"
+  exit 1
+fi
+
+if [ ! -d "${directory}/" ]; then
+  echo "O '${directory}' não existe ou não é um diretório"
+  exit 1
+fi
+
+if [ -f "${output}" ]; then
+  echo "O '${output}' já existe"
+  exit 1
+fi
+
+if ! touch "${output}" 2>/dev/null; then
+  echo "Não foi possível criar o arquivo de saída"
+  exit 1
+fi
+
+rm "${output}"
+
+# Executa compactação
+if ! "_${1}"; then
+  echo "Falha ao criar arquivo '${output}'"
+  exit 1
+fi
