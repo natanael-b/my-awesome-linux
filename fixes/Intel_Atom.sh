@@ -1,4 +1,9 @@
-#!/usr/bin/bash env
+#!/usr/bin/env bash
+
+grep -qi "model name.*intel.*atom" || {
+  echo "CPU isn't Intel Atom, skipping fixes for Intel Atom..."
+  exit 0
+}
 
 echo "options rtl8723bs 11n_disable=1"  | tee /etc/modprobe.d/fix-wifi-Intel-Atom.conf
 echo "blacklist snd_hdmi_lpe_audio"     | tee /etc/modprobe.d/fix-lpe-Intel-Atom.conf
